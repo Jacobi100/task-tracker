@@ -3,28 +3,10 @@ import os
 import sys
 from datetime import datetime
 
+from storage import load_tasks save_tasks
+
 TASK_FILE = "tasks.json"
 VALID_STATUSES = {"todo", "in-progress", "done"}
-
-
-def load_tasks():
-    """Return the stored tasks, or an empty list if the file is missing or invalid."""
-    if not os.path.exists(TASK_FILE):
-        return []
-
-    try:
-        with open(TASK_FILE, "r", encoding="utf-8") as file:
-            data = json.load(file)
-            return data if isinstance(data, list) else []
-    except (FileNotFoundError, json.JSONDecodeError, ValueError):
-        return []
-
-
-def save_tasks(tasks):
-    """Save tasks back to the JSON file."""
-    with open(TASK_FILE, "w", encoding="utf-8") as file:
-        json.dump(tasks, file, indent=2)
-        file.write("\n")
 
 
 def get_next_id(tasks):
