@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 
-from storage import load_tasks save_tasks
+from storage import load_tasks, save_tasks
 
 TASK_FILE = "tasks.json"
 VALID_STATUSES = {"todo", "in-progress", "done"}
