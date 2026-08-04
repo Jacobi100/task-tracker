@@ -1,38 +1,126 @@
+import json
 import os
-import json 
-from datetime import datetime 
+import sys
+from datetime import datetime
 
-Task_file = "tasks.json"
+TASK_FILE = "tasks.json"
+VALID_STATUSES = {"todo", "in-progress", "done"}
 
-def load_task():
-    """return an empty list if doesn't exist, else load tasks from JSON file """
-    if not os.path.exists(Task_file):
+
+def load_tasks():
+    """Return the stored tasks, or an empty list if the file is missing or invalid."""
+    if not os.path.exists(TASK_FILE):
         return []
-    
+
     try:
-        with open(Task_file, "r") as file :
-            return json.load(file)  #deserialize the json file object into corresponding Python datatype
-     except Exception :
+        with open(TASK_FILE, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            return data if isinstance(data, list) else []
+    except (FileNotFoundError, json.JSONDecodeError, ValueError):
         return []
 
-def saves_task(tasks):
-    """saves tasks back to JSON file"""
-    with open(Task_file, "w") as file :
-        json.dump(tasks, file)
 
-def get_task_id(tasks):
-    """getting unique id for each tasks"""
-    if not in tasks :
-        return 1 
-    return max([task['id'] for task in tasks]) + 1 
-
-def add_task(description) :
-     
+def save_tasks(tasks):
+    """Save tasks back to the JSON file."""
+    with open(TASK_FILE, "w", encoding="utf-8") as file:
+        json.dump(tasks, file, indent=2)
+        file.write("\n")
 
 
+def get_next_id(tasks):
+    """Get the next unique task ID."""
+    if not tasks:
+        return 1
+    return max(task.get("id", 0) for task in tasks) + 1
 
 
-        
+def add_task(description):
+    """Add a new task with the default status 'todo'."""
+    if not description.strip():
+        print("Error: Description cannot be empty.")
+        return
+
+    tasks = load_tasks()
+    now = datetime.now().isoformat()
+    new_task = {
+        "id": get_next_id(tasks),
+        "description": description,
+        "status": "todo",
+        "createdAt": now,
+        "updatedAt": now,
+    }
+    tasks.append(new_task)
+    save_tasks(tasks)
+    print(f"Task added successfully (ID: {new_task['id']})")
+
+
+def update_task(task_id, description):
+    """Update the description of an existing task."""
+    if not description.strip():
+        print("Error: Description cannot be empty.")
+        return
+
+    tasks = load_tasks()
+    for task in tasks:
+        if task["id"] == task_id:
+            task["description"] = description
+            task["updatedAt"] = datetime.now().isoformat()
+            save_tasks(tasks)
+            print(f"Task {task_id} updated successfully.")
+            return
+    print(f"Error: Task with ID {task_id} not found.")
+
+
+def delete_task(task_id):
+    """Remove a task from the list by ID."""
+    tasks = load_tasks()
+    filtered_tasks = [task for task in tasks if task["id"] != task_id]
+
+    if len(filtered_tasks) == len(tasks):
+        print(f"Error: Task with ID {task_id} not found.")
+        return
+
+    save_tasks(filtered_tasks)
+    print(f"Task {task_id} deleted successfully.")
+
+
+def change_status(task_id, status):
+    """Change a task's status to a valid value."""
+    if status not in VALID_STATUSES:
+        print("Error: Invalid status. Use todo, in-progress, or done.")
+        return
+
+    tasks = load_tasks()
+    for task in tasks:
+        if task["id"] == task_id:
+            task["status"] = status
+            task["updatedAt"] = datetime.now().isoformat()
+            save_tasks(tasks)
+            print(f"Task {task_id} marked as {status}.")
+            return
+
+    print(f"Error: Task with ID {task_id} not found.")
+
+
+def list_tasks(status_filter=None):
+    """Display tasks, optionally filtered by status."""
+    tasks = load_tasks()
+
+    if status_filter:
+        if status_filter not in VALID_STATUSES:
+            print("Error: Invalid status filter. Use todo, in-progress, or done.")
+            return
+        tasks = [task for task in tasks if task["status"] == status_filter]
+
+    if not tasks:
+        print("No tasks found.")
+        return
+
+    print(f"{'ID':<5} | {'Status':<12} | {'Description'}")
+    print("-" * 50)
+    for task in tasks:
+        print(f"{task['id']:<5} | {task['status']:<12} | {task['description']}")
+
 
 
 
