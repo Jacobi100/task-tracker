@@ -1,6 +1,8 @@
 # Task Tracker CLI
 
-Repository: https://github.com/elmustapha100/Task-Tracker-CLI
+Repository: https://github.com/elmustapha100/task-tracker
+
+Submission / Project page: https://roadmap.sh/projects/task-tracker
 
 A minimal command-line Task Tracker to add, update, list, and manage tasks stored in a JSON file.
 
